@@ -42,14 +42,17 @@ Proof of Concept for **CA Vida** (Crédito Agrícola Seguros de Vida) — migrat
 cavida-poc-snowflake/
 ├── README.md
 ├── sql/
-│   ├── pipeline/              # Core ELT pipeline (extraction → staging → DW)
-│   │   ├── LOAD_LIFEUNITOFEXPOSURE.sql
-│   │   ├── LOAD_LIFEPOLICYTRANS.sql
-│   │   ├── INSPOL_LIFEUNITOFEXPOSURE_003.sql  (staging transforms)
-│   │   ├── INSPOL_LIFEUNITOFEXPOSURE_005.sql  (SCD2 load)
-│   │   ├── INSPOL_LIFEPOLICYTRANS_001.sql
-│   │   ├── INSPOL_LIFEPOLICYTRANS_002.sql
-│   │   └── INSPOL_LIFEPOLICYTRANS_003.sql
+│   ├── setup/                 # Infrastructure setup (run first)
+│   │   ├── 00_infrastructure.sql    (DB, schemas, warehouses, formats, stages)
+│   │   └── 01_extraction_tables.sql (17 COPY INTO parallel extractions)
+│   ├── pipeline/              # Core ELT pipeline (staging → DW)
+│   │   ├── INSPOL_LIFEUNITOFEXPOSURE_003.sql  (UOE staging transforms)
+│   │   ├── INSPOL_LIFEUNITOFEXPOSURE_005.sql  (UOE LAG/LEAD parity)
+│   │   ├── INSPOL_LIFEPOLICYTRANS_001.sql     (LPT row explosion)
+│   │   ├── INSPOL_LIFEPOLICYTRANS_002.sql     (LPT state machine)
+│   │   ├── INSPOL_LIFEPOLICYTRANS_003.sql     (LPT append + filter)
+│   │   ├── LOAD_LIFEUNITOFEXPOSURE.sql        (SCD2 DW load)
+│   │   └── LOAD_LIFEPOLICYTRANS.sql           (Splitter DW load)
 │   ├── semantic_view/         # Cortex Analyst semantic model
 │   │   ├── INSURANCE_INTELLIGENCE_semantic_model.yaml
 │   │   └── create_semantic_view.sql
@@ -57,17 +60,18 @@ cavida-poc-snowflake/
 │   │   └── create_agent.sql
 │   ├── governance/            # Tag-based masking policies
 │   │   └── create_masking_policy.sql
-│   └── orchestration/         # Task DAG with Cortex LLM alerts
-│       └── create_task_dag.sql
+│   └── orchestration/         # Task DAGs
+│       ├── create_pipeline_dag.sql  (Full ETL orchestration: 27 jobs)
+│       └── create_task_dag.sql      (AI monitoring with Cortex LLM)
 ├── streamlit/
 │   └── portfolio_risk_monitor/  # Streamlit in Snowflake app
 │       ├── streamlit_app.py
 │       ├── snowflake.yml
 │       └── environment.yml
-├── dbt/                       # dbt models (Solvency II reporting - future)
-│   └── (dbt project structure)
 └── docs/
-    ├── CHANGE_LOG_UOE_SCD2_DEDUP.md
+    ├── IMPLEMENTATION_GUIDE.md          (Step-by-step deployment guide)
+    ├── POC_TECHNICAL_DOCUMENTATION.md   (Full technical spec + competitive analysis)
+    ├── CHANGE_LOG_UOE_SCD2_DEDUP.md     (SCD2 deduplication fix)
     └── slides/
         ├── cavida_poc_results_slides.html
         ├── cavida_poc_results_slides.pdf
