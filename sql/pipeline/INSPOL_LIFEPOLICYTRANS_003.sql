@@ -1,0 +1,349 @@
+CREATE OR REPLACE TRANSIENT TABLE CAVIDA_POC.STAGING.INSPOL_LIFEPOLICYTRANS_003 AS
+WITH
+status_2_from_5 AS (
+    SELECT
+        POLICY_TRANS_ID,
+        POLICY_NO,
+        ORIGINAL_POLICY_TRANS_ID,
+        X_PROCESSED_DT AS X_MOV_DT,
+        TRANS_DT,
+        X_VALUE_DT,
+        X_EMISSION_DT,
+        X_CREATION_DT,
+        X_PROCESSED_DT,
+        X_PERIOD_FROM_DT,
+        X_PERIOD_TO_DT,
+        X_CANCEL_DT,
+        X_EXIT_DT,
+        X_RETURNED_DT,
+        TRANS_SUB_TYPE_CD,
+        '2' AS X_TRANS_STATUS_CD,
+        X_CANCEL_REASON_CD,
+        X_TRANS_PREVIOUS_STATUS_CD,
+        TRANS_GROSS_AMT,
+        TRANS_NET_AMT,
+        X_TRANS_PURE_AMT,
+        X_INEM_AMT,
+        PAYMENT_METHOD_CD,
+        X_SUBS_CHARGE_AMT,
+        X_SUBS_FEE_AMT,
+        X_MANAGEMENT_FEE_AMT,
+        X_REINVESTMENT_FLG,
+        X_RET_REASON_CD,
+        X_IS_CLOSED_FLG,
+        X_EMPLOYEE_EXT_ID,
+        AGENCY_INT_ID,
+        X_PROCESSED_FLG,
+        X_CHARGEBACK_FLG,
+        X_RESULT_PARTICIPATION_FLG,
+        X_POLICY_TRANS_MANUAL_FLG
+    FROM CAVIDA_POC.STAGING.INSPOL_LIFEPOLICYTRANS_002
+    WHERE X_TRANS_STATUS_CD = '5'
+      AND X_TRANS_PREVIOUS_STATUS_CD IN ('0','1')
+),
+
+status_2_from_9 AS (
+    SELECT
+        POLICY_TRANS_ID,
+        POLICY_NO,
+        ORIGINAL_POLICY_TRANS_ID,
+        X_PROCESSED_DT AS X_MOV_DT,
+        TRANS_DT,
+        X_VALUE_DT,
+        X_EMISSION_DT,
+        X_CREATION_DT,
+        X_PROCESSED_DT,
+        X_PERIOD_FROM_DT,
+        X_PERIOD_TO_DT,
+        NULL::DATE AS X_CANCEL_DT,
+        X_EXIT_DT,
+        X_RETURNED_DT,
+        TRANS_SUB_TYPE_CD,
+        '2' AS X_TRANS_STATUS_CD,
+        X_CANCEL_REASON_CD,
+        X_TRANS_PREVIOUS_STATUS_CD,
+        TRANS_GROSS_AMT,
+        TRANS_NET_AMT,
+        X_TRANS_PURE_AMT,
+        X_INEM_AMT,
+        PAYMENT_METHOD_CD,
+        X_SUBS_CHARGE_AMT,
+        X_SUBS_FEE_AMT,
+        X_MANAGEMENT_FEE_AMT,
+        X_REINVESTMENT_FLG,
+        X_RET_REASON_CD,
+        X_IS_CLOSED_FLG,
+        X_EMPLOYEE_EXT_ID,
+        AGENCY_INT_ID,
+        X_PROCESSED_FLG,
+        X_CHARGEBACK_FLG,
+        X_RESULT_PARTICIPATION_FLG,
+        X_POLICY_TRANS_MANUAL_FLG
+    FROM CAVIDA_POC.STAGING.INSPOL_LIFEPOLICYTRANS_002
+    WHERE X_TRANS_STATUS_CD = '9'
+      AND X_TRANS_PREVIOUS_STATUS_CD <> '2'
+      AND X_PROCESSED_FLG = '1'
+),
+
+appended AS (
+    SELECT * FROM status_2_from_5
+    UNION ALL
+    SELECT * FROM status_2_from_9
+    UNION ALL
+    SELECT
+        POLICY_TRANS_ID,
+        POLICY_NO,
+        ORIGINAL_POLICY_TRANS_ID,
+        X_MOV_DT,
+        TRANS_DT,
+        X_VALUE_DT,
+        X_EMISSION_DT,
+        X_CREATION_DT,
+        X_PROCESSED_DT,
+        X_PERIOD_FROM_DT,
+        X_PERIOD_TO_DT,
+        X_CANCEL_DT,
+        X_EXIT_DT,
+        X_RETURNED_DT,
+        TRANS_SUB_TYPE_CD,
+        X_TRANS_STATUS_CD,
+        X_CANCEL_REASON_CD,
+        X_TRANS_PREVIOUS_STATUS_CD,
+        TRANS_GROSS_AMT,
+        TRANS_NET_AMT,
+        X_TRANS_PURE_AMT,
+        X_INEM_AMT,
+        PAYMENT_METHOD_CD,
+        X_SUBS_CHARGE_AMT,
+        X_SUBS_FEE_AMT,
+        X_MANAGEMENT_FEE_AMT,
+        X_REINVESTMENT_FLG,
+        X_RET_REASON_CD,
+        X_IS_CLOSED_FLG,
+        X_EMPLOYEE_EXT_ID,
+        AGENCY_INT_ID,
+        X_PROCESSED_FLG,
+        X_CHARGEBACK_FLG,
+        X_RESULT_PARTICIPATION_FLG,
+        X_POLICY_TRANS_MANUAL_FLG
+    FROM CAVIDA_POC.STAGING.INSPOL_LIFEPOLICYTRANS_002
+),
+
+with_processed_flg AS (
+    SELECT
+        POLICY_TRANS_ID,
+        POLICY_NO,
+        ORIGINAL_POLICY_TRANS_ID,
+        X_MOV_DT,
+        TRANS_DT,
+        X_VALUE_DT,
+        X_EMISSION_DT,
+        X_CREATION_DT,
+        X_PROCESSED_DT,
+        X_PERIOD_FROM_DT,
+        X_PERIOD_TO_DT,
+        X_CANCEL_DT,
+        X_EXIT_DT,
+        X_RETURNED_DT,
+        TRANS_SUB_TYPE_CD,
+        X_TRANS_STATUS_CD,
+        X_CANCEL_REASON_CD,
+        X_TRANS_PREVIOUS_STATUS_CD,
+        TRANS_GROSS_AMT,
+        TRANS_NET_AMT,
+        X_TRANS_PURE_AMT,
+        X_INEM_AMT,
+        PAYMENT_METHOD_CD,
+        X_SUBS_CHARGE_AMT,
+        X_SUBS_FEE_AMT,
+        X_MANAGEMENT_FEE_AMT,
+        X_REINVESTMENT_FLG,
+        X_RET_REASON_CD,
+        X_IS_CLOSED_FLG,
+        X_EMPLOYEE_EXT_ID,
+        AGENCY_INT_ID,
+        CASE
+            WHEN X_PROCESSED_DT IS NOT NULL
+                 AND SUM(CASE WHEN X_PROCESSED_DT IS NOT NULL THEN 1 ELSE 0 END)
+                     OVER (PARTITION BY POLICY_TRANS_ID
+                           ORDER BY X_TRANS_STATUS_CD, X_MOV_DT, X_EXIT_DT
+                           ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) = 0
+            THEN '1'
+            ELSE '0'
+        END AS X_PROCESSED_FLG,
+        X_CHARGEBACK_FLG,
+        X_RESULT_PARTICIPATION_FLG,
+        X_POLICY_TRANS_MANUAL_FLG
+    FROM appended
+),
+
+recrel_extract AS (
+    SELECT
+        LPAD("RL$MOD"::VARCHAR,2,'0')
+            || LPAD("RLNANO"::VARCHAR,2,'0')
+            || LPAD("RLNMES"::VARCHAR,2,'0')
+            || LPAD("RLNSEQ"::VARCHAR,5,'0') AS POLICY_TRANS_ID,
+        LPAD("RL$MOD"::VARCHAR,2,'0')
+            || LPAD("RLRANO"::VARCHAR,2,'0')
+            || LPAD("RLRMES"::VARCHAR,2,'0')
+            || LPAD("RLRSEQ"::VARCHAR,5,'0') AS POLICY_TRANS_ID_ORIG
+    FROM CAVIDA_POC.EXTRACTION.DB2_RECREL_POC
+    WHERE "RL$MOD" = 21 AND "RLESPC" = 6
+),
+
+regularization_join AS (
+    SELECT
+        r.POLICY_TRANS_ID,
+        r.POLICY_TRANS_ID_ORIG,
+        lpt.TRANS_DT AS X_REGULARIZATION_DT
+    FROM recrel_extract r
+    LEFT JOIN CAVIDA_POC.STAGING.INSPOL_LIFEPOLICYTRANS_002 lpt
+        ON r.POLICY_TRANS_ID = lpt.POLICY_TRANS_ID
+       AND lpt.X_TRANS_STATUS_CD = '5'
+),
+
+apol00_renuncias AS (
+    SELECT DISTINCT
+        LPAD("A0$MOD"::VARCHAR,2,'0') || LPAD("A0$APL"::VARCHAR,8,'0') AS POLICY_NO,
+        TRIM("A0SITU"::VARCHAR) AS POLICY_STATUS_CD,
+        TRIM("A0SITU"::VARCHAR) || TRIM(COALESCE("A0RAZA",'')) AS STATUS_REASON_CD
+    FROM CAVIDA_POC.EXTRACTION.DB2_APOL00_POC
+    WHERE "A0$MOD" = 21
+      AND TRIM("A0SITU"::VARCHAR) || TRIM(COALESCE("A0RAZA",'')) = '33'
+),
+
+main_with_regularization AS (
+    SELECT
+        w.POLICY_TRANS_ID,
+        w.POLICY_NO,
+        w.ORIGINAL_POLICY_TRANS_ID,
+        w.X_MOV_DT,
+        w.TRANS_DT,
+        w.X_VALUE_DT,
+        w.X_EMISSION_DT,
+        w.X_CREATION_DT,
+        w.X_PROCESSED_DT,
+        w.X_PERIOD_FROM_DT,
+        w.X_PERIOD_TO_DT,
+        w.X_CANCEL_DT,
+        w.X_EXIT_DT,
+        w.X_RETURNED_DT,
+        CASE
+            WHEN SUBSTR(w.POLICY_NO, 1, 2) = '21' AND w.TRANS_SUB_TYPE_CD = '9'
+            THEN w.TRANS_DT
+            ELSE rj.X_REGULARIZATION_DT
+        END AS X_REGULARIZATION_DT,
+        w.TRANS_SUB_TYPE_CD,
+        w.X_TRANS_STATUS_CD,
+        w.X_CANCEL_REASON_CD,
+        w.X_TRANS_PREVIOUS_STATUS_CD,
+        w.TRANS_GROSS_AMT,
+        w.TRANS_NET_AMT,
+        w.X_TRANS_PURE_AMT,
+        w.X_INEM_AMT,
+        w.PAYMENT_METHOD_CD,
+        w.X_SUBS_CHARGE_AMT,
+        w.X_SUBS_FEE_AMT,
+        w.X_MANAGEMENT_FEE_AMT,
+        w.X_REINVESTMENT_FLG,
+        w.X_RET_REASON_CD,
+        w.X_IS_CLOSED_FLG,
+        w.X_EMPLOYEE_EXT_ID,
+        w.AGENCY_INT_ID,
+        w.X_PROCESSED_FLG,
+        w.X_CHARGEBACK_FLG,
+        w.X_RESULT_PARTICIPATION_FLG,
+        w.X_POLICY_TRANS_MANUAL_FLG
+    FROM with_processed_flg w
+    LEFT JOIN regularization_join rj
+        ON w.POLICY_TRANS_ID = rj.POLICY_TRANS_ID_ORIG
+       AND w.X_TRANS_STATUS_CD = '5'
+    WHERE w.TRANS_SUB_TYPE_CD <> '6'
+),
+
+ultimo_recibo AS (
+    SELECT
+        m.POLICY_NO,
+        m.POLICY_TRANS_ID,
+        m.TRANS_SUB_TYPE_CD,
+        m.TRANS_DT,
+        m.X_CREATION_DT,
+        m.TRANS_GROSS_AMT,
+        m.TRANS_NET_AMT
+    FROM main_with_regularization m
+    INNER JOIN apol00_renuncias a
+        ON m.POLICY_NO = a.POLICY_NO
+    WHERE m.TRANS_SUB_TYPE_CD = '9'
+      AND m.TRANS_DT IS NOT NULL
+),
+
+primeiro_recibo AS (
+    SELECT
+        m.POLICY_NO,
+        m.POLICY_TRANS_ID,
+        m.X_CREATION_DT,
+        m.TRANS_GROSS_AMT,
+        m.TRANS_NET_AMT
+    FROM main_with_regularization m
+    INNER JOIN apol00_renuncias a
+        ON m.POLICY_NO = a.POLICY_NO
+    WHERE m.X_TRANS_STATUS_CD = '5'
+      AND m.TRANS_SUB_TYPE_CD <> '9'
+      AND m.TRANS_GROSS_AMT <> 0
+),
+
+corrige_ultimo_recibo AS (
+    SELECT
+        u.POLICY_NO,
+        u.POLICY_TRANS_ID,
+        p.X_CREATION_DT,
+        p.TRANS_GROSS_AMT,
+        p.TRANS_NET_AMT
+    FROM primeiro_recibo p
+    FULL JOIN ultimo_recibo u
+        ON p.POLICY_NO = u.POLICY_NO
+    WHERE p.POLICY_NO IS NOT NULL
+)
+
+SELECT
+    m.POLICY_TRANS_ID,
+    m.POLICY_NO,
+    m.ORIGINAL_POLICY_TRANS_ID,
+    m.X_MOV_DT,
+    m.TRANS_DT,
+    m.X_VALUE_DT,
+    m.X_EMISSION_DT,
+    m.X_CREATION_DT,
+    m.X_PROCESSED_DT,
+    m.X_PERIOD_FROM_DT,
+    m.X_PERIOD_TO_DT,
+    m.X_CANCEL_DT,
+    m.X_EXIT_DT,
+    m.X_RETURNED_DT,
+    m.X_REGULARIZATION_DT,
+    m.TRANS_SUB_TYPE_CD,
+    m.X_TRANS_STATUS_CD,
+    m.X_CANCEL_REASON_CD,
+    m.X_TRANS_PREVIOUS_STATUS_CD,
+    COALESCE(c.TRANS_GROSS_AMT, m.TRANS_GROSS_AMT) AS TRANS_GROSS_AMT,
+    COALESCE(c.TRANS_NET_AMT, m.TRANS_NET_AMT) AS TRANS_NET_AMT,
+    m.X_TRANS_PURE_AMT,
+    m.X_INEM_AMT,
+    m.PAYMENT_METHOD_CD,
+    m.X_SUBS_CHARGE_AMT,
+    m.X_SUBS_FEE_AMT,
+    m.X_MANAGEMENT_FEE_AMT,
+    m.X_REINVESTMENT_FLG,
+    m.X_RET_REASON_CD,
+    m.X_IS_CLOSED_FLG,
+    m.X_EMPLOYEE_EXT_ID,
+    m.AGENCY_INT_ID,
+    m.X_PROCESSED_FLG,
+    m.X_CHARGEBACK_FLG,
+    m.X_RESULT_PARTICIPATION_FLG,
+    m.X_POLICY_TRANS_MANUAL_FLG
+FROM main_with_regularization m
+LEFT JOIN corrige_ultimo_recibo c
+    ON m.POLICY_TRANS_ID = c.POLICY_TRANS_ID
+   AND m.POLICY_NO = c.POLICY_NO
+;

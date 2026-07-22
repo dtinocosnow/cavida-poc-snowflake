@@ -1,0 +1,469 @@
+name: INSURANCE_INTELLIGENCE
+description: Life insurance portfolio analytics for CA Vida - Portuguese insurance
+  company. Tracks policy exposure, premiums, cash values, coverage types, and distribution
+  channels. Used by actuaries and business analysts to monitor portfolio health, persistency,
+  and premium evolution.
+tables:
+  - name: LIFE_UNIT_OF_EXPOSURE
+    base_table:
+      database: CAVIDA_POC
+      schema: DW
+      table: LIFE_UNIT_OF_EXPOSURE
+    dimensions:
+      - name: UOE_RK
+        expr: UOE_RK
+        data_type: NUMBER
+      - name: POLICY_RK
+        expr: POLICY_RK
+        data_type: VARCHAR
+        synonyms:
+          - policy key
+          - policy identifier
+      - name: X_POLICY_PROPOSAL_RK
+        expr: X_POLICY_PROPOSAL_RK
+        data_type: VARCHAR
+      - name: X_POLICY_VERSION
+        expr: X_POLICY_VERSION
+        data_type: NUMBER
+        description: Version number of the policy
+      - name: X_ORDER_CD
+        expr: X_ORDER_CD
+        data_type: VARCHAR
+      - name: COVERAGE_RIDER_RK
+        expr: COVERAGE_RIDER_RK
+        data_type: VARCHAR
+      - name: X_POLICY_STATUS_CD
+        expr: X_POLICY_STATUS_CD
+        data_type: VARCHAR
+        description: Current status code of the policy
+        synonyms:
+          - policy status
+          - status
+          - estado da apolice
+      - name: RENEWABLE_IND
+        expr: RENEWABLE_IND
+        data_type: VARCHAR
+        description: Indicates if the policy is renewable
+        synonyms:
+          - renewable
+          - renovavel
+      - name: X_ORDER_STATUS
+        expr: X_ORDER_STATUS
+        data_type: VARCHAR
+      - name: LOB_RK
+        expr: LOB_RK
+        data_type: VARCHAR
+        description: Line of business reference key
+        synonyms:
+          - line of business
+          - ramo
+    time_dimensions:
+      - name: VALID_FROM_DTTM
+        expr: VALID_FROM_DTTM
+        data_type: TIMESTAMP_LTZ
+      - name: X_ADMISSION_DT
+        expr: X_ADMISSION_DT
+        data_type: DATE
+        description: Date the policy was admitted/issued
+        synonyms:
+          - admission date
+          - issue date
+          - data de admissao
+      - name: EFFECTIVE_DT
+        expr: EFFECTIVE_DT
+        data_type: DATE
+        description: Policy effective start date
+        synonyms:
+          - effective date
+          - start date
+          - data de inicio
+      - name: EXPIRATION_DT
+        expr: EXPIRATION_DT
+        data_type: DATE
+        description: Policy expiration date
+        synonyms:
+          - expiration date
+          - end date
+          - data de vencimento
+      - name: X_ORDER_STATUS_DT
+        expr: X_ORDER_STATUS_DT
+        data_type: DATE
+      - name: X_POLICY_TERMINATION_DT
+        expr: X_POLICY_TERMINATION_DT
+        data_type: DATE
+        description: Date the policy was terminated/cancelled
+        synonyms:
+          - termination date
+          - cancellation date
+          - data de cancelamento
+      - name: CHANGE_EFFECTIVE_FROM_DTTM
+        expr: CHANGE_EFFECTIVE_FROM_DTTM
+        data_type: TIMESTAMP_NTZ
+      - name: CHANGE_EFFECTIVE_TO_DTTM
+        expr: CHANGE_EFFECTIVE_TO_DTTM
+        data_type: TIMESTAMP_NTZ
+      - name: VALID_TO_DTTM
+        expr: VALID_TO_DTTM
+        data_type: TIMESTAMP_LTZ
+      - name: PROCESSED_DTTM
+        expr: PROCESSED_DTTM
+        data_type: TIMESTAMP_LTZ
+    facts:
+      - name: ANNUAL_PREMIUM_AMT
+        expr: ANNUAL_PREMIUM_AMT
+        data_type: NUMBER
+        description: Annual premium amount in EUR
+        synonyms:
+          - premium
+          - annual premium
+          - prima anual
+          - premio
+      - name: CASH_VALUE
+        expr: CASH_VALUE
+        data_type: NUMBER
+        description: Cash surrender value of the policy
+        synonyms:
+          - cash value
+          - valor de resgate
+          - surrender value
+      - name: X_INDEXATION_RT
+        expr: X_INDEXATION_RT
+        data_type: FLOAT
+        description: Indexation rate applied to the policy
+        synonyms:
+          - indexation rate
+          - taxa de indexacao
+    metrics:
+      - name: TOTAL_PREMIUM
+        expr: SUM(ANNUAL_PREMIUM_AMT)
+        description: Total annual premium across all policies
+        synonyms:
+          - total premium
+          - prima total
+      - name: TOTAL_CASH_VALUE
+        expr: SUM(CASH_VALUE)
+        description: Total cash value of all policies
+        synonyms:
+          - total cash value
+          - valor total
+      - name: NUM_POLICIES
+        expr: COUNT(DISTINCT POLICY_RK)
+        description: Number of distinct policies
+        synonyms:
+          - policy count
+          - numero de apolices
+      - name: AVG_PREMIUM
+        expr: AVG(ANNUAL_PREMIUM_AMT)
+        description: Average annual premium per exposure
+        synonyms:
+          - average premium
+          - prima media
+      - name: NUM_EXPOSURES
+        expr: COUNT(*)
+        description: Total number of exposure records
+        synonyms:
+          - exposure count
+          - numero de exposicoes
+      - name: TERMINATED_POLICIES
+        expr: COUNT(DISTINCT CASE WHEN X_POLICY_TERMINATION_DT IS NOT NULL THEN POLICY_RK END)
+        description: Number of policies that have been terminated
+        synonyms:
+          - cancelled policies
+          - apolices canceladas
+      - name: LOST_PREMIUM
+        expr: SUM(CASE WHEN X_POLICY_TERMINATION_DT IS NOT NULL THEN ANNUAL_PREMIUM_AMT ELSE 0 END)
+        description: Total premium from terminated policies
+        synonyms:
+          - lost premium
+          - prima perdida
+  - name: INSURANCE_POLICY
+    base_table:
+      database: CAVIDA_POC
+      schema: POC_LOOK
+      table: INSURANCE_POLICY
+    primary_key:
+      columns:
+        - POLICY_RK
+    dimensions:
+      - name: POLICY_RK
+        expr: POLICY_RK
+        data_type: VARCHAR
+      - name: POLICY_NO
+        expr: POLICY_NO
+        data_type: VARCHAR
+        description: Policy number
+        synonyms:
+          - policy number
+          - numero da apolice
+      - name: X_POLICY_NO_EXT
+        expr: X_POLICY_NO_EXT
+        data_type: VARCHAR
+      - name: ORIGINAL_POLICY_NO
+        expr: ORIGINAL_POLICY_NO
+        data_type: VARCHAR
+      - name: X_SEQ_NO
+        expr: X_SEQ_NO
+        data_type: VARCHAR
+      - name: X_PRODUCT_CATEGORY_CD
+        expr: X_PRODUCT_CATEGORY_CD
+        data_type: VARCHAR
+        description: Product category code
+        synonyms:
+          - product category
+          - categoria de produto
+      - name: POLICY_VERSION
+        expr: POLICY_VERSION
+        data_type: VARCHAR
+      - name: POLICY_STATUS_CD
+        expr: POLICY_STATUS_CD
+        data_type: VARCHAR
+        description: Policy status code from lookup
+        synonyms:
+          - policy status
+          - estado
+      - name: STATUS_DT
+        expr: STATUS_DT
+        data_type: VARCHAR
+      - name: STATUS_REASON_CD
+        expr: STATUS_REASON_CD
+        data_type: VARCHAR
+        description: Reason code for the current status
+        synonyms:
+          - status reason
+          - motivo
+      - name: EFFECTIVE_FROM_DTTM
+        expr: EFFECTIVE_FROM_DTTM
+        data_type: VARCHAR
+      - name: EFFECTIVE_TO_DTTM
+        expr: EFFECTIVE_TO_DTTM
+        data_type: VARCHAR
+      - name: VALID_TO_DTTM
+        expr: VALID_TO_DTTM
+        data_type: VARCHAR
+      - name: PROCESSED_DTTM
+        expr: PROCESSED_DTTM
+        data_type: VARCHAR
+  - name: COVERAGE
+    base_table:
+      database: CAVIDA_POC
+      schema: POC_LOOK
+      table: COVERAGE
+    primary_key:
+      columns:
+        - COVERAGE_RK
+    dimensions:
+      - name: COVERAGE_RK
+        expr: COVERAGE_RK
+        data_type: VARCHAR
+      - name: COVERAGE_CD
+        expr: COVERAGE_CD
+        data_type: VARCHAR
+        description: Coverage code
+        synonyms:
+          - coverage code
+          - codigo de cobertura
+      - name: X_COVERAGE_SHORT_DESC
+        expr: X_COVERAGE_SHORT_DESC
+        data_type: VARCHAR
+        description: Short description of the coverage
+        synonyms:
+          - coverage name
+          - nome da cobertura
+      - name: COVERAGE_TYPE_CD
+        expr: COVERAGE_TYPE_CD
+        data_type: VARCHAR
+        description: Type of coverage
+        synonyms:
+          - coverage type
+          - tipo de cobertura
+      - name: COVERAGE_DESC
+        expr: COVERAGE_DESC
+        data_type: VARCHAR
+        description: Full description of the coverage
+      - name: EFFECTIVE_FROM_DTTM
+        expr: EFFECTIVE_FROM_DTTM
+        data_type: VARCHAR
+      - name: EFFECTIVE_TO_DTTM
+        expr: EFFECTIVE_TO_DTTM
+        data_type: VARCHAR
+      - name: VALID_TO_DTTM
+        expr: VALID_TO_DTTM
+        data_type: VARCHAR
+      - name: PROCESSED_DTTM
+        expr: PROCESSED_DTTM
+        data_type: VARCHAR
+  - name: PRODUCT_CATEGORY
+    base_table:
+      database: CAVIDA_POC
+      schema: POC_LOOK
+      table: PRODUCT_CATEGORY
+    dimensions:
+      - name: PRODUCT_CATEGORY_RK
+        expr: PRODUCT_CATEGORY_RK
+        data_type: VARCHAR
+      - name: PRODUCT_CATEGORY_CD
+        expr: PRODUCT_CATEGORY_CD
+        data_type: VARCHAR
+        description: Product category code
+        synonyms:
+          - product code
+          - codigo de produto
+      - name: PRODUCT_CATEGORY_DESC
+        expr: PRODUCT_CATEGORY_DESC
+        data_type: VARCHAR
+        description: Product category description
+        synonyms:
+          - product name
+          - nome do produto
+      - name: PRODUCT_CATEGORY_TYPE_CD
+        expr: PRODUCT_CATEGORY_TYPE_CD
+        data_type: VARCHAR
+        description: Product category type
+        synonyms:
+          - product type
+          - tipo de produto
+      - name: X_LOB_RK
+        expr: X_LOB_RK
+        data_type: VARCHAR
+      - name: EFFECTIVE_FROM_DTTM
+        expr: EFFECTIVE_FROM_DTTM
+        data_type: VARCHAR
+      - name: EFFECTIVE_TO_DTTM
+        expr: EFFECTIVE_TO_DTTM
+        data_type: VARCHAR
+      - name: VALID_TO_DTTM
+        expr: VALID_TO_DTTM
+        data_type: VARCHAR
+      - name: PROCESSED_DTTM
+        expr: PROCESSED_DTTM
+        data_type: VARCHAR
+  - name: X_BUSINESS_STRUCTURE
+    base_table:
+      database: CAVIDA_POC
+      schema: POC_LOOK
+      table: X_BUSINESS_STRUCTURE
+    dimensions:
+      - name: BSN_STRUCTURE_RK
+        expr: BSN_STRUCTURE_RK
+        data_type: VARCHAR
+      - name: DDN_EXT_CD
+        expr: DDN_EXT_CD
+        data_type: VARCHAR
+      - name: DDN_INT_ID
+        expr: DDN_INT_ID
+        data_type: VARCHAR
+      - name: DDN_SHORT_DESC
+        expr: DDN_SHORT_DESC
+        data_type: VARCHAR
+        description: Distribution network short description
+        synonyms:
+          - distribution network
+          - rede de distribuicao
+      - name: DDN_DESC
+        expr: DDN_DESC
+        data_type: VARCHAR
+        description: Distribution network full description
+      - name: REGION_ID
+        expr: REGION_ID
+        data_type: VARCHAR
+        description: Geographic region identifier
+        synonyms:
+          - region
+          - regiao
+      - name: CCAM_EXT_ID
+        expr: CCAM_EXT_ID
+        data_type: VARCHAR
+      - name: CCAM_INT_ID
+        expr: CCAM_INT_ID
+        data_type: VARCHAR
+      - name: CCAM_DESC
+        expr: CCAM_DESC
+        data_type: VARCHAR
+        description: Commercial center description
+        synonyms:
+          - commercial center
+          - centro comercial
+      - name: CCAM_CENTRAL_TAX
+        expr: CCAM_CENTRAL_TAX
+        data_type: VARCHAR
+      - name: AGENCY_EXT_ID
+        expr: AGENCY_EXT_ID
+        data_type: VARCHAR
+      - name: AGENCY_INT_ID
+        expr: AGENCY_INT_ID
+        data_type: VARCHAR
+      - name: AGENCY_DESC
+        expr: AGENCY_DESC
+        data_type: VARCHAR
+        description: Agency/broker description
+        synonyms:
+          - agency
+          - agencia
+          - mediador
+      - name: AGENCY_STATUS
+        expr: AGENCY_STATUS
+        data_type: VARCHAR
+      - name: LAST_MOV_DT
+        expr: LAST_MOV_DT
+        data_type: VARCHAR
+      - name: VALID_FROM_DTTM
+        expr: VALID_FROM_DTTM
+        data_type: VARCHAR
+      - name: VALID_TO_DTTM
+        expr: VALID_TO_DTTM
+        data_type: VARCHAR
+      - name: PROCESSED_DTTM
+        expr: PROCESSED_DTTM
+        data_type: VARCHAR
+relationships:
+  - name: LIFE_UNIT_OF_EXPOSURE_TO_COVERAGE
+    left_table: LIFE_UNIT_OF_EXPOSURE
+    right_table: COVERAGE
+    join_type: inner
+    relationship_type: many_to_one
+    relationship_columns:
+      - left_column: COVERAGE_RIDER_RK
+        right_column: COVERAGE_RK
+  - name: LIFE_UNIT_OF_EXPOSURE_TO_INSURANCE_POLICY
+    left_table: LIFE_UNIT_OF_EXPOSURE
+    right_table: INSURANCE_POLICY
+    join_type: left_outer
+    relationship_type: many_to_one
+    relationship_columns:
+      - left_column: POLICY_RK
+        right_column: POLICY_RK
+verified_queries:
+  - name: premium_by_status
+    question: What is the total premium and number of policies by policy status?
+    sql: SELECT X_POLICY_STATUS_CD, COUNT(DISTINCT POLICY_RK) AS num_policies, SUM(ANNUAL_PREMIUM_AMT)
+      AS total_premium FROM life_unit_of_exposure GROUP BY X_POLICY_STATUS_CD
+    verified_at: 1784680596
+    verified_by: Semantic Model Generator
+  - name: monthly_evolution
+    question: What is the monthly evolution of new policies and premium?
+    sql: SELECT DATE_TRUNC('MONTH', EFFECTIVE_DT) AS month, COUNT(DISTINCT POLICY_RK)
+      AS new_policies, SUM(ANNUAL_PREMIUM_AMT) AS premium FROM life_unit_of_exposure
+      WHERE NOT EFFECTIVE_DT IS NULL GROUP BY month ORDER BY month
+    verified_at: 1784680596
+    verified_by: Semantic Model Generator
+  - name: premium_by_status_coverage
+    question: What is the premium and cash value breakdown by policy status and coverage type?
+    sql: SELECT u.X_POLICY_STATUS_CD, c.COVERAGE_TYPE_CD, COUNT(*) AS exposure_count,
+      SUM(u.ANNUAL_PREMIUM_AMT) AS total_premium, SUM(u.CASH_VALUE) AS total_cash_value
+      FROM life_unit_of_exposure AS u JOIN coverage AS c ON u.COVERAGE_RIDER_RK =
+      c.COVERAGE_RK GROUP BY u.X_POLICY_STATUS_CD, c.COVERAGE_TYPE_CD
+    verified_at: 1784680596
+    verified_by: Semantic Model Generator
+  - name: terminated_policies
+    question: How many policies have been terminated and what is the total lost premium?
+    sql: SELECT COUNT(DISTINCT POLICY_RK) AS terminated_policies, SUM(ANNUAL_PREMIUM_AMT)
+      AS lost_premium FROM life_unit_of_exposure WHERE NOT X_POLICY_TERMINATION_DT
+      IS NULL
+    verified_at: 1784680596
+    verified_by: Semantic Model Generator
+  - name: avg_premium_renewable
+    question: What is the average premium for renewable vs non-renewable policies?
+    sql: SELECT RENEWABLE_IND, COUNT(DISTINCT POLICY_RK) AS num_policies, AVG(ANNUAL_PREMIUM_AMT)
+      AS avg_premium FROM life_unit_of_exposure GROUP BY RENEWABLE_IND
+    verified_at: 1784680596
+    verified_by: Semantic Model Generator

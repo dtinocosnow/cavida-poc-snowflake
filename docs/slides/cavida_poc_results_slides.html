@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CA Vida - SAS to Snowflake Migration POC Results</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary-color: #29B5E8;
+      --secondary-color: #4FD1C5;
+      --dark-color: #0f172a;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --text-dark: #111827;
+      --text-light: #6b7280;
+      --border-color: #e5e7eb;
+      --bg-muted: #f8fafc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #111827;
+      color: var(--text-dark);
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    body::-webkit-scrollbar { display: none; }
+
+    .slide-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      background: white;
+      overflow: hidden;
+      position: relative;
+      transform-origin: center center;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    .slide.dark {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+    }
+
+    .slide.gradient-blue {
+      background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 50%, #164e63 100%);
+      color: white;
+    }
+
+    .title-slide {
+      padding: 110px 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--primary-color);
+    }
+
+    .hero h1 {
+      font-size: 78px;
+      line-height: 1.05;
+      margin-top: 24px;
+      max-width: 1400px;
+    }
+
+    .hero p {
+      margin-top: 28px;
+      font-size: 32px;
+      line-height: 1.4;
+      max-width: 1100px;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .logos {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .logos img {
+      height: 56px;
+      object-fit: contain;
+    }
+
+    .slide-header {
+      padding: 54px 88px 28px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .slide-header h2 {
+      font-size: 54px;
+      line-height: 1.08;
+    }
+
+    .slide-header p {
+      margin-top: 12px;
+      color: var(--text-light);
+      font-size: 26px;
+    }
+
+    .slide-content {
+      padding: 44px 88px 120px;
+      height: calc(1080px - 170px);
+    }
+
+    .agenda-list,
+    .bullet-list {
+      display: grid;
+      gap: 18px;
+      list-style: none;
+      font-size: 30px;
+      line-height: 1.35;
+    }
+
+    .agenda-list li,
+    .bullet-list li {
+      padding: 20px 24px;
+      background: var(--bg-muted);
+      border-left: 8px solid var(--primary-color);
+      border-radius: 18px;
+    }
+
+    .dark .agenda-list li,
+    .dark .bullet-list li {
+      background: rgba(255,255,255,0.06);
+      border-left-color: var(--primary-color);
+      color: rgba(255,255,255,0.92);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      height: 100%;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 28px 30px;
+    }
+
+    .card h3 {
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+
+    .card p,
+    .card li {
+      font-size: 22px;
+      line-height: 1.45;
+      color: #374151;
+    }
+
+    .metric-hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100%;
+      gap: 20px;
+    }
+
+    .metric-number {
+      font-size: 180px;
+      font-weight: 800;
+      color: var(--primary-color);
+      line-height: 1;
+    }
+
+    .metric-label {
+      font-size: 36px;
+      color: var(--text-light);
+      text-align: center;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .kpi-box {
+      text-align: center;
+      padding: 36px 24px;
+      background: var(--bg-muted);
+      border-radius: 24px;
+      border: 2px solid var(--border-color);
+    }
+
+    .kpi-box .number {
+      font-size: 72px;
+      font-weight: 800;
+      color: var(--primary-color);
+      line-height: 1.1;
+    }
+
+    .kpi-box .label {
+      font-size: 22px;
+      color: var(--text-light);
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    .dark .kpi-box {
+      background: rgba(41, 181, 232, 0.08);
+      border-color: rgba(41, 181, 232, 0.3);
+    }
+
+    .dark .kpi-box .label {
+      color: rgba(255,255,255,0.7);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 22px;
+      margin-top: 24px;
+    }
+
+    table.data-table th {
+      background: var(--dark-color);
+      color: white;
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    table.data-table td {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    table.data-table tr:nth-child(even) td {
+      background: var(--bg-muted);
+    }
+
+    .check { color: var(--accent-green); font-weight: 700; }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .value-box {
+      background: var(--bg-muted);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+    .value-box strong {
+      display: block;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+
+    .value-box span {
+      font-size: 26px;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 22px;
+    }
+
+    .comparison-row > div {
+      padding: 18px 24px;
+    }
+
+    .comparison-row.header > div {
+      background: var(--dark-color);
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sf-col { background: rgba(41, 181, 232, 0.06); }
+    .dbx-col { background: rgba(255, 82, 82, 0.04); }
+
+    .footer {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      bottom: 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 20px;
+      color: var(--text-light);
+    }
+
+    .footer .line {
+      height: 2px;
+      flex: 1;
+      background: linear-gradient(90deg, var(--primary-color), transparent);
+      margin-right: 24px;
+    }
+
+    .dark .footer { color: rgba(255,255,255,0.5); }
+    .dark .footer .line { background: linear-gradient(90deg, var(--primary-color), transparent); }
+
+    .dark .slide-header { border-bottom-color: rgba(255,255,255,0.15); }
+    .dark .slide-header h2 { color: white; }
+    .dark .slide-header p { color: rgba(255,255,255,0.7); }
+
+    .timeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-top: 60px;
+    }
+
+    .timeline-step {
+      text-align: center;
+      padding: 24px;
+    }
+
+    .timeline-step .step-time {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--primary-color);
+    }
+
+    .timeline-step .step-label {
+      font-size: 20px;
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    .timeline-arrow {
+      font-size: 36px;
+      color: var(--border-color);
+      padding: 0 16px;
+    }
+
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .req-card {
+      background: var(--bg-muted);
+      border-radius: 20px;
+      padding: 28px;
+      border-left: 6px solid var(--primary-color);
+    }
+
+    .req-card h4 {
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+    }
+
+    .req-card p {
+      font-size: 20px;
+      color: var(--text-light);
+      line-height: 1.4;
+    }
+
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .arch-box {
+      background: var(--bg-muted);
+      border: 2px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px 32px;
+      text-align: center;
+      min-width: 220px;
+    }
+
+    .arch-box h4 {
+      font-size: 20px;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .arch-box p {
+      font-size: 18px;
+      color: var(--text-light);
+    }
+
+    .arch-arrow {
+      font-size: 32px;
+      color: var(--primary-color);
+    }
+
+    #slide-indicator {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      color: white;
+      background: rgba(17, 24, 39, 0.7);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="slide-indicator">1 / 14</div>
+
+  <!-- SLIDE 1: Title -->
+  <section class="slide-container">
+    <div class="slide dark title-slide">
+      <div class="hero">
+        <div class="eyebrow">POC Results Presentation</div>
+        <h1>SAS to Snowflake Migration</h1>
+        <p>27 Batch Jobs &middot; 100% Row-Count Parity &middot; 31x Faster Than SAS</p>
+      </div>
+      <div class="logos">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Snowflake_Logo.svg" alt="Snowflake">
+      </div>
+      <div class="footer" style="color: rgba(255,255,255,0.5);">
+        <div class="line"></div><span>CA Vida &middot; Business Critical &middot; Azure West Europe &middot; July 2025</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: Agenda -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Agenda</h2>
+        <p>POC scope, results, and path forward</p>
+      </div>
+      <div class="slide-content">
+        <ul class="agenda-list">
+          <li><strong>1.</strong> POC Requirements &mdash; What CA Vida asked for</li>
+          <li><strong>2.</strong> The Challenge &mdash; SAS batch complexity at scale</li>
+          <li><strong>3.</strong> Results: Performance &mdash; 31x faster, zero tuning</li>
+          <li><strong>4.</strong> Results: Precision &mdash; 100% row-count parity (27/27)</li>
+          <li><strong>5.</strong> Architecture &mdash; Pure SQL, single warehouse</li>
+          <li><strong>6.</strong> Migration Speed &mdash; 3 days with Cortex Code vs 8-12 weeks traditional</li>
+          <li><strong>7.</strong> Enterprise Readiness &amp; Next Steps</li>
+        </ul>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: POC Requirements -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>POC Requirements</h2>
+        <p>What CA Vida defined as success criteria</p>
+      </div>
+      <div class="slide-content">
+        <div class="req-grid">
+          <div class="req-card">
+            <h4>Migrate 27 SAS DI Studio Jobs</h4>
+            <p>17 extraction, 8 transformation, 2 load jobs covering Life Policy Transactions and Unit of Exposure pipelines</p>
+          </div>
+          <div class="req-card">
+            <h4>100% Row-Count Parity</h4>
+            <p>Every job must produce exactly the same row count as the SAS reference output &mdash; zero tolerance</p>
+          </div>
+          <div class="req-card">
+            <h4>Beat SAS Baseline (2h 23m)</h4>
+            <p>End-to-end execution must demonstrate meaningful performance improvement over current SAS runtime</p>
+          </div>
+          <div class="req-card">
+            <h4>3 Cold Runs with Timing</h4>
+            <p>Consistent results across multiple executions with no result caching (USE_CACHED_RESULT = FALSE)</p>
+          </div>
+          <div class="req-card">
+            <h4>Pure SQL Implementation</h4>
+            <p>No external dependencies, notebooks, or runtime environments &mdash; maintainable by existing SQL team</p>
+          </div>
+          <div class="req-card">
+            <h4>Production-Ready Architecture</h4>
+            <p>Orchestration, cost governance, and enterprise features suitable for insurance workloads</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: The Challenge -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>The Challenge</h2>
+        <p>SAS Data Integration Studio &mdash; complexity at insurance scale</p>
+      </div>
+      <div class="slide-content" style="padding-bottom: 80px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div class="card">
+            <h3 style="font-size: 24px;">Data Volume</h3>
+            <ul style="list-style: none; font-size: 21px; display: grid; gap: 10px; margin-top: 12px;">
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--primary-color); border-radius: 12px;">190M+ source rows across 17 tables</li>
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--primary-color); border-radius: 12px;">Row explosion: 1 transaction &rarr; 6 status observations</li>
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--primary-color); border-radius: 12px;">Final output: 169M history + 24M exposure rows</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 style="font-size: 24px;">SAS-Specific Complexity</h3>
+            <ul style="list-style: none; font-size: 21px; display: grid; gap: 10px; margin-top: 12px;">
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--accent-orange); border-radius: 12px;">RETAIN/BY-group processing (stateful iteration)</li>
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--accent-orange); border-radius: 12px;">SAS NULL semantics differ from SQL NULL</li>
+              <li style="padding: 12px 16px; background: var(--bg-muted); border-left: 6px solid var(--accent-orange); border-radius: 12px;">Constructed keys &amp; MDY date functions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="timeline" style="margin-top: 36px;">
+          <div class="timeline-step">
+            <div class="step-time" style="font-size: 38px;">17</div>
+            <div class="step-label">Extraction</div>
+          </div>
+          <div class="timeline-arrow">&rarr;</div>
+          <div class="timeline-step">
+            <div class="step-time" style="font-size: 38px;">8</div>
+            <div class="step-label">Transformation</div>
+          </div>
+          <div class="timeline-arrow">&rarr;</div>
+          <div class="timeline-step">
+            <div class="step-time" style="font-size: 38px;">2</div>
+            <div class="step-label">Load</div>
+          </div>
+          <div class="timeline-arrow">&rarr;</div>
+          <div class="timeline-step">
+            <div class="step-time" style="font-size: 38px;">3</div>
+            <div class="step-label">DW Tables</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: Performance Results -->
+  <section class="slide-container">
+    <div class="slide dark">
+      <div class="slide-header">
+        <h2>Performance: 31x Faster</h2>
+        <p>Zero tuning &mdash; just selected a Large warehouse and executed</p>
+      </div>
+      <div class="slide-content">
+        <div class="kpi-row">
+          <div class="kpi-box">
+            <div class="number">4m 35s</div>
+            <div class="label">Snowflake End-to-End</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number">2h 23m</div>
+            <div class="label">SAS Baseline</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="color: var(--accent-green);">31x</div>
+            <div class="label">Faster</div>
+          </div>
+        </div>
+        <div class="kpi-row" style="margin-top: 32px;">
+          <div class="kpi-box">
+            <div class="number" style="font-size: 48px;">~45s</div>
+            <div class="label">17 Extractions (parallel)</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 48px;">2m 59s</div>
+            <div class="label">8 Transformations</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 48px;">51s</div>
+            <div class="label">2 Loads (SCD2 + Splitter)</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer" style="color: rgba(255,255,255,0.5);"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: Precision Results -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Precision: 100% Parity</h2>
+        <p>27 of 27 jobs at exactly zero row-count difference vs SAS reference</p>
+      </div>
+      <div class="slide-content" style="overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Rows</th>
+              <th>Diff vs SAS</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Extraction (17 tables)</td><td>190,051,049</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>UOE_001 &rarr; UOE_005</td><td>24,168,838</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>LPT_001 (150M row explosion)</td><td>149,714,421</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>LPT_002 (enrichment)</td><td>149,714,421</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>LPT_003 (append + filter)</td><td>169,321,373</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>Load &rarr; LIFE_UNIT_OF_EXPOSURE</td><td>24,168,838</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>Load &rarr; LIFE_POLICY_TRANS</td><td>56,597</td><td>0</td><td class="check">PASS</td></tr>
+            <tr><td>Load &rarr; X_LIFE_POLICY_TRANS_HIST</td><td>169,264,776</td><td>0</td><td class="check">PASS</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 24px; display: flex; gap: 24px;">
+          <div class="req-card" style="flex:1;">
+            <h4>SAS Parity Fixes Applied</h4>
+            <p>Character NULL semantics, Numeric NULL handling, X_PROCESSED_DT guard logic, MOVIMENTOS entry row filter</p>
+          </div>
+          <div class="req-card" style="flex:1;">
+            <h4>Validation Method</h4>
+            <p>Row counts, distinct key counts, financial sums, status distributions &mdash; all verified against SAS logs</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: Architecture -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Architecture</h2>
+        <p>Pure SQL on a single warehouse &mdash; no notebooks, no runtimes, no tuning</p>
+      </div>
+      <div class="slide-content">
+        <div class="arch-flow">
+          <div class="arch-box">
+            <h4>Source</h4>
+            <p>17 CSV files<br>ISO-8859-1<br>@INPUT_DATA stage</p>
+          </div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-box">
+            <h4>Extraction</h4>
+            <p>COPY INTO<br>Parallel (17 jobs)<br>~45 seconds</p>
+          </div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-box">
+            <h4>Transformation</h4>
+            <p>Window Functions<br>QUALIFY, LAG/LEAD<br>8 sequential jobs</p>
+          </div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-box">
+            <h4>Load</h4>
+            <p>SCD2 MERGE<br>MD5 change detect<br>DENSE_RANK keys</p>
+          </div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-box">
+            <h4>Data Warehouse</h4>
+            <p>3 final tables<br>193M+ rows<br>Ready for BI</p>
+          </div>
+        </div>
+        <div class="kpi-row" style="margin-top: 48px;">
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px;">1</div>
+            <div class="label">Single Large Warehouse</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px;">0</div>
+            <div class="label">External Dependencies</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px;">~$3.30</div>
+            <div class="label">Cost Per Full Run (~0.6 credits)</div>
+          </div>
+        </div>
+        <div style="margin-top: 32px; text-align: center; font-size: 24px; color: var(--text-light);">
+          Business Critical &middot; Azure West Europe &middot; Snowflake Tasks DAG &middot; Auto-suspend 60s
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: Migration Speed with Cortex Code -->
+  <section class="slide-container">
+    <div class="slide dark">
+      <div class="slide-header">
+        <h2>Migration Speed: 3 Days with Cortex Code</h2>
+        <p>AI-assisted development vs traditional consulting engagement</p>
+      </div>
+      <div class="slide-content">
+        <div style="display: grid; grid-template-columns: 1fr 80px 1fr; gap: 0; align-items: center; margin-top: 20px;">
+          <div class="kpi-box" style="padding: 40px 32px;">
+            <div class="number" style="font-size: 96px;">3</div>
+            <div class="label" style="font-size: 20px; margin-top: 8px;">Days with Cortex Code</div>
+            <div style="margin-top: 16px; font-size: 18px; color: rgba(255,255,255,0.6);">1 SE + AI pair programming</div>
+          </div>
+          <div style="text-align: center; font-size: 36px; color: var(--primary-color);">vs</div>
+          <div class="kpi-box" style="padding: 40px 32px; background: rgba(255,82,82,0.08); border-color: rgba(255,82,82,0.3);">
+            <div class="number" style="font-size: 96px; color: #ef4444;">8-12</div>
+            <div class="label" style="font-size: 20px; margin-top: 8px;">Weeks Traditional Method</div>
+            <div style="margin-top: 16px; font-size: 18px; color: rgba(255,255,255,0.6);">2-3 consultants (SAS + SQL + QA)</div>
+          </div>
+        </div>
+        <table class="data-table" style="margin-top: 36px; font-size: 20px;">
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Cortex Code</th>
+              <th>Traditional</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="color: rgba(255,255,255,0.9);"><td>SAS analysis &amp; understanding</td><td style="color: var(--primary-color); font-weight: 700;">~2 hours</td><td>1-2 weeks</td></tr>
+            <tr style="color: rgba(255,255,255,0.9);"><td>SQL translation (27 jobs)</td><td style="color: var(--primary-color); font-weight: 700;">~8 hours</td><td>3-4 weeks</td></tr>
+            <tr style="color: rgba(255,255,255,0.9);"><td>Testing &amp; parity fixes</td><td style="color: var(--primary-color); font-weight: 700;">~12 hours</td><td>2-4 weeks</td></tr>
+            <tr style="color: rgba(255,255,255,0.9);"><td>Documentation &amp; orchestration</td><td style="color: var(--primary-color); font-weight: 700;">~2 hours</td><td>1-2 weeks</td></tr>
+            <tr style="background: rgba(41,181,232,0.12); color: white;"><td><strong>TOTAL</strong></td><td style="color: var(--primary-color);"><strong>3 days</strong></td><td><strong>8-12 weeks</strong></td></tr>
+          </tbody>
+        </table>
+        <div style="text-align: center; margin-top: 24px; font-size: 22px; color: rgba(255,255,255,0.7);">
+          Acceleration: <strong style="color: var(--accent-green); font-size: 28px;">13-20x faster delivery</strong> &mdash; from months to days
+        </div>
+      </div>
+      <div class="footer" style="color: rgba(255,255,255,0.5);"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: Requirements Delivered -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>How Snowflake Delivers</h2>
+        <p>Every POC requirement fulfilled</p>
+      </div>
+      <div class="slide-content">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Requirement</th>
+              <th>Target</th>
+              <th>Result</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Migrate 27 SAS Jobs</td><td>27 jobs</td><td>27/27 migrated</td><td class="check">PASS</td></tr>
+            <tr><td>Row-Count Parity</td><td>100%</td><td>100% (all diff=0)</td><td class="check">PASS</td></tr>
+            <tr><td>Beat SAS Baseline</td><td>&lt; 2h 23m</td><td>4m 35s (31x faster)</td><td class="check">PASS</td></tr>
+            <tr><td>3 Cold Runs Consistent</td><td>Repeatable timing</td><td>All runs ~4m 35s</td><td class="check">PASS</td></tr>
+            <tr><td>Pure SQL</td><td>No notebooks/runtimes</td><td>100% ANSI SQL + extensions</td><td class="check">PASS</td></tr>
+            <tr><td>Production Architecture</td><td>Orchestration + governance</td><td>Tasks DAG + Resource Monitors</td><td class="check">PASS</td></tr>
+            <tr><td>Cost Transparency</td><td>Predictable billing</td><td>~0.6 credits/run ($3.30)</td><td class="check">PASS</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: Competitive Position -->
+  <section class="slide-container">
+    <div class="slide gradient-blue">
+      <div class="slide-header" style="border-bottom-color: rgba(255,255,255,0.15);">
+        <h2 style="color: white;">Enterprise Readiness</h2>
+        <p style="color: rgba(255,255,255,0.7);">Why Snowflake is the right platform for CA Vida</p>
+      </div>
+      <div class="slide-content">
+        <div class="three-col">
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Instant Resume</div>
+            <div class="label">&lt; 1 second cold start<br>vs 2-5 min cluster provisioning</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Native DR</div>
+            <div class="label">Cross-region replication<br>Automatic failover</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Hard Limits</div>
+            <div class="label">Resource Monitors<br>Auto-suspend execution</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Governance</div>
+            <div class="label">Horizon Catalog<br>Privacy Policies, RBAC</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Zero Tuning</div>
+            <div class="label">No Spark parameters<br>No cluster sizing expertise</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 36px;">Solvency II</div>
+            <div class="label">Audit trail + fine-grained<br>access out-of-box</div>
+          </div>
+        </div>
+        <div style="margin-top: 40px; text-align: center; font-size: 26px; color: rgba(255,255,255,0.85); max-width: 1200px; margin-left: auto; margin-right: auto;">
+          A single Large warehouse processed 27 jobs, 190M+ rows, and delivered 31x performance improvement. No Spark expertise required. Your existing SQL team can maintain and evolve these pipelines.
+        </div>
+      </div>
+      <div class="footer" style="color: rgba(255,255,255,0.5);"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 11: Per-Job Timing -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Detailed Timing</h2>
+        <p>Per-job execution on Large warehouse (cold run, no cache)</p>
+      </div>
+      <div class="slide-content" style="overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Stage</th>
+              <th>SAS Time</th>
+              <th>Snowflake</th>
+              <th>Speedup</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Extraction (17 parallel)</td><td>4m 21s</td><td>~45s</td><td><strong>5.8x</strong></td></tr>
+            <tr><td>UOE_001 &rarr; UOE_005</td><td>18m 32s</td><td>54.3s</td><td><strong>20x</strong></td></tr>
+            <tr><td>LPT_001 (150M rows)</td><td>42m 15s</td><td>56.6s</td><td><strong>45x</strong></td></tr>
+            <tr><td>LPT_002</td><td>22m 08s</td><td>33.9s</td><td><strong>39x</strong></td></tr>
+            <tr><td>LPT_003</td><td>17m 37s</td><td>34.2s</td><td><strong>31x</strong></td></tr>
+            <tr><td>Load UOE (SCD2)</td><td>24m 50s</td><td>50.9s</td><td><strong>29x</strong></td></tr>
+            <tr><td>Load LPT (Splitter)</td><td>13m 13s</td><td>19.6s</td><td><strong>40x</strong></td></tr>
+            <tr style="background: rgba(41,181,232,0.08);"><td><strong>TOTAL</strong></td><td><strong>2h 23m 04s</strong></td><td><strong>~4m 35s</strong></td><td><strong style="color: var(--primary-color);">31x</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 12: Warehouse Sizing Comparison -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Warehouse Sizing: Time vs Cost</h2>
+        <p>Same SQL, same data, instant resize &mdash; choose speed or economy</p>
+      </div>
+      <div class="slide-content">
+        <table class="data-table" style="margin-top: 16px; font-size: 21px;">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Credits/hr</th>
+              <th>Pipeline Time</th>
+              <th>vs SAS</th>
+              <th>Credits Used</th>
+              <th>Cost/Run (BC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: rgba(16,185,129,0.06);"><td>X-Small</td><td>1</td><td>~14m 34s</td><td><strong>10x faster</strong></td><td>~0.24</td><td style="color: #10B981; font-weight: 700;">~$1.34</td></tr>
+            <tr style="background: rgba(16,185,129,0.06);"><td>Small</td><td>2</td><td>~8m 45s</td><td><strong>16x faster</strong></td><td>~0.29</td><td style="color: #10B981; font-weight: 700;">~$1.60</td></tr>
+            <tr><td>Medium</td><td>4</td><td>~9m 10s</td><td><strong>15x faster</strong></td><td>~0.61</td><td>~$3.36</td></tr>
+            <tr style="background: rgba(41,181,232,0.08);"><td><strong>Large (POC baseline)</strong></td><td><strong>8</strong></td><td><strong>~4m 35s</strong></td><td><strong>31x faster</strong></td><td><strong>~0.61</strong></td><td><strong>~$3.36</strong></td></tr>
+            <tr><td>X-Large</td><td>16</td><td>~2m 18s</td><td><strong>62x faster</strong></td><td>~0.61</td><td>~$3.36</td></tr>
+            <tr><td>2X-Large</td><td>32</td><td>~1m 09s</td><td><strong>124x faster</strong></td><td>~0.61</td><td>~$3.36</td></tr>
+          </tbody>
+        </table>
+        <div class="kpi-row" style="margin-top: 32px;">
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px; color: var(--accent-green);">~$3.36</div>
+            <div class="label">Same cost regardless of size</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px;">Instant</div>
+            <div class="label">Resize with zero downtime</div>
+          </div>
+          <div class="kpi-box">
+            <div class="number" style="font-size: 42px;">2x</div>
+            <div class="label">Each size = double the speed</div>
+          </div>
+        </div>
+        <div style="margin-top: 24px; padding: 18px 24px; background: var(--bg-muted); border-radius: 16px; border-left: 6px solid var(--primary-color); font-size: 20px; color: var(--text-light);">
+          <strong style="color: var(--text-dark);">Key insight:</strong> From Medium upward, double the price/hr &times; half the time = same total cost (~$3.36). But X-Small and Small are even <strong>cheaper</strong> ($1.34 and $1.60) while still being 10-16x faster than SAS. For the AI Agent, an XS resolves queries over 24M rows in &lt;2s. In Databricks, larger clusters consume more DBUs due to Spark/JVM overhead and 2-3 min cold start penalty.
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: Optimized Scenario -->
+  <section class="slide-container">
+    <div class="slide">
+      <div class="slide-header">
+        <h2>Scenario 2: With Tuning</h2>
+        <p>Same Large warehouse, with parallelism + Gen2 + pre-materialized lookups</p>
+      </div>
+      <div class="slide-content">
+        <div style="display: grid; grid-template-columns: 1fr 80px 1fr; gap: 0; align-items: center; margin-top: 20px;">
+          <div class="kpi-box" style="padding: 32px;">
+            <div class="number" style="font-size: 64px;">4m 35s</div>
+            <div class="label" style="margin-top: 8px;">Baseline (Zero Tuning)</div>
+            <div style="font-size: 16px; color: var(--text-light); margin-top: 8px;">Sequential execution, Gen1, no optimization</div>
+          </div>
+          <div style="text-align: center; font-size: 36px; color: var(--primary-color);">&rarr;</div>
+          <div class="kpi-box" style="padding: 32px; background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3);">
+            <div class="number" style="font-size: 64px; color: var(--accent-green);">~3m 15s</div>
+            <div class="label" style="margin-top: 8px;">Optimized (With Tuning)</div>
+            <div style="font-size: 16px; color: var(--text-light); margin-top: 8px;">Parallel chains, Gen2, pre-materialized lookups</div>
+          </div>
+        </div>
+        <table class="data-table" style="margin-top: 32px; font-size: 20px;">
+          <thead>
+            <tr>
+              <th>Optimization</th>
+              <th>Baseline</th>
+              <th>Optimized</th>
+              <th>Savings</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Parallel UOE + LPT chains (Tasks DAG)</td><td>2m 59s (sequential)</td><td>2m 05s (max chain)</td><td style="color: var(--accent-green); font-weight: 700;">-54s</td></tr>
+            <tr><td>Gen2 warehouse (~20% compute improvement)</td><td>2m 05s transform</td><td>~1m 40s</td><td style="color: var(--accent-green); font-weight: 700;">-25s</td></tr>
+            <tr><td>Pre-materialized lookup tables</td><td>51s loads</td><td>~45s</td><td style="color: var(--accent-green); font-weight: 700;">-6s</td></tr>
+            <tr style="background: rgba(16,185,129,0.06);"><td><strong>TOTAL</strong></td><td><strong>4m 35s</strong></td><td><strong>~3m 15s</strong></td><td style="color: var(--accent-green); font-weight: 700;"><strong>29% faster</strong></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 24px; text-align: center; font-size: 22px; color: var(--text-light);">
+          Both scenarios: 100% row-count parity maintained &middot; Same Large warehouse &middot; ~44x faster than SAS (2h 23m)
+        </div>
+      </div>
+      <div class="footer"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 13: Next Steps -->
+  <section class="slide-container">
+    <div class="slide dark">
+      <div class="slide-header">
+        <h2>Next Steps</h2>
+        <p>From POC to production</p>
+      </div>
+      <div class="slide-content">
+        <ul class="agenda-list">
+          <li><strong>1. Production Deployment</strong> &mdash; Deploy Tasks DAG with monitoring and alerting</li>
+          <li><strong>2. Content Validation</strong> &mdash; Column-level hash comparison on sample data (beyond row counts)</li>
+          <li><strong>3. Remaining Pipelines</strong> &mdash; Extend to additional SAS DI Studio workloads</li>
+          <li><strong>4. Governance Setup</strong> &mdash; RBAC roles, resource monitors, audit policies</li>
+          <li><strong>5. DR Configuration</strong> &mdash; Cross-region replication for Solvency II compliance</li>
+        </ul>
+        <div style="margin-top: 60px; text-align: center;">
+          <div style="font-size: 48px; font-weight: 800; color: var(--primary-color);">POC: Complete</div>
+          <div style="font-size: 26px; color: rgba(255,255,255,0.7); margin-top: 16px;">27/27 jobs &middot; 100% precision &middot; 31x faster &middot; ~$3.30/run (Business Critical)</div>
+        </div>
+      </div>
+      <div class="footer" style="color: rgba(255,255,255,0.5);"><div class="line"></div><span>CA Vida &middot; POC Results</span></div>
+    </div>
+  </section>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const indicator = document.getElementById("slide-indicator");
+
+    function scaleSlides() {
+      const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      slides.forEach((slide) => {
+        slide.style.transform = `scale(${scale})`;
+      });
+    }
+
+    function updateIndicator() {
+      const index = Math.round(window.scrollY / window.innerHeight) + 1;
+      indicator.textContent = `${Math.min(index, slides.length)} / ${slides.length}`;
+    }
+
+    window.addEventListener("resize", scaleSlides);
+    window.addEventListener("scroll", updateIndicator, { passive: true });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") {
+        window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+      }
+      if (event.key === "ArrowUp" || event.key === "PageUp") {
+        window.scrollBy({ top: -window.innerHeight, behavior: "smooth" });
+      }
+      if (event.key === "Home") { window.scrollTo({ top: 0, behavior: "smooth" }); }
+      if (event.key === "End") { window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
+    });
+
+    scaleSlides();
+    updateIndicator();
+  </script>
+</body>
+</html>

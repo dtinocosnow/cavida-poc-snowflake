@@ -1,0 +1,13 @@
+definition_version: 2
+entities:
+  portfolio_risk_monitor:
+    type: streamlit
+    identifier:
+      name: PORTFOLIO_RISK_MONITOR
+      database: CAVIDA_POC
+      schema: ANALYTICS
+    query_warehouse: COMPUTE_WH
+    main_file: streamlit_app.py
+    artifacts:
+      - streamlit_app.py
+      - pyproject.toml

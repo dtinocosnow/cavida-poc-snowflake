@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.env
+
+# Snowflake
+.snowflake/
+*.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Vendor Package (confidential)
+POC/Vendor_Package/
+
+# Local working files
+insurance_agent_app.py
+streamlit_dashboard/
+streamlit_slv2/
+email_followup_cavida.md
+RELATORIO_DEMONSTRACAO_CA_VIDA.md
+RELATORIO_DEMONSTRACAO_CA_VIDA.pdf
+semantic_view_*/
+slides/*.html
+slides/*.pdf
+streamlit_app/
+export_pdf.py
+cavida_dbt/

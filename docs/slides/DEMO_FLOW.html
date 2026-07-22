@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CA Vida - Demo Flow</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; color: #1a1a1a; }
+h1 { color: #1B2A4A; border-bottom: 3px solid #29B5E8; padding-bottom: 12px; }
+h2 { color: #29B5E8; margin-top: 32px; }
+.step { background: #F8FAFC; border-left: 4px solid #29B5E8; padding: 16px 20px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+.step-green { border-left-color: #10B981; }
+.step-purple { border-left-color: #8B5CF6; }
+.step-orange { border-left-color: #F59E0B; }
+.point { background: #FEF3C7; padding: 8px 16px; border-radius: 6px; margin-top: 8px; font-style: italic; }
+code { background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+.duration { color: #64748B; font-size: 14px; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>DEMO FLOW - Insurance Intelligence Agent</h1>
+<p class="duration">Duración total estimada: 12-15 minutos</p>
+
+<h2>1. Semantic View (2 min)</h2>
+<div class="step">
+  <strong>Mostrar:</strong> Snowsight → CAVIDA_POC.ANALYTICS → Semantic Views → INSURANCE_INTELLIGENCE<br>
+  <strong>Acción:</strong> Abrir la definición YAML y mostrar las 5 tablas, métricas, y sinónimos en portugués<br>
+  <div class="point">Punto: "Una sola fuente de verdad semántica que alimenta al agente, Power BI, y cualquier app. Databricks no tiene esto."</div>
+</div>
+
+<h2>2. Cortex Agent en Acción (4 min)</h2>
+<div class="step step-green">
+  <strong>Mostrar:</strong> Streamlit App (<code>insurance_agent_app.py</code>)<br>
+  <strong>Preguntas sugeridas:</strong>
+  <ol>
+    <li>"Qual é a prima total do portfolio?" → muestra total premium</li>
+    <li>"Quantas apólices estão ativas por status?" → breakdown por status</li>
+    <li>"Qual é a evolução mensal de novas apólices?" → time series</li>
+    <li>"Quantas apólices foram canceladas?" → terminated analysis</li>
+  </ol>
+  <div class="point">Punto: "El usuario pregunta en lenguaje natural (portugués o español) y el agente genera SQL optimizado sobre 24M registros. 99% accuracy vs 88% de Databricks Genie."</div>
+</div>
+
+<h2>3. Governance - PII & Masking (3 min)</h2>
+<div class="step step-purple">
+  <strong>Mostrar:</strong> Snowsight SQL Worksheet<br>
+  <strong>Queries:</strong>
+  <ol>
+    <li><code>SELECT * FROM TABLE(INFORMATION_SCHEMA.TAG_REFERENCES_ALL_COLUMNS('CAVIDA_POC.POC_LOOK.EMPLOYEE', 'TABLE')) WHERE TAG_NAME = 'PII_TYPE'</code> → muestra 3 columnas clasificadas</li>
+    <li><code>USE ROLE PUBLIC; SELECT EMPLOYEE_ID, X_CENTRAL_TAX_NO FROM CAVIDA_POC.POC_LOOK.EMPLOYEE LIMIT 5;</code> → muestra ***MASKED***</li>
+    <li><code>USE ROLE ACCOUNTADMIN; SELECT EMPLOYEE_ID, X_CENTRAL_TAX_NO FROM CAVIDA_POC.POC_LOOK.EMPLOYEE LIMIT 5;</code> → muestra datos reales</li>
+  </ol>
+  <div class="point">Punto: "Un tag = una política de masking para todas las columnas sensibles. Con Agent Identity (GA), el propio agente tiene su identidad y se le aplican las políticas. Databricks no tiene ni AI Guardrails ni Agent Identity."</div>
+</div>
+
+<h2>4. Task DAG con Alertas AI (3 min)</h2>
+<div class="step step-orange">
+  <strong>Mostrar:</strong> Snowsight → CAVIDA_POC.ORCHESTRATION → Tasks<br>
+  <strong>Acciones:</strong>
+  <ol>
+    <li>Mostrar el DAG visual (DQ_CHECK_ROOT → 2 children)</li>
+    <li><code>SELECT * FROM CAVIDA_POC.ORCHESTRATION.PIPELINE_MONITOR_LOG;</code> → resultados con AI_SUMMARY</li>
+    <li>Mostrar la columna AI_SUMMARY generada por Cortex LLM</li>
+    <li>Mostrar la Alert con notificación email</li>
+  </ol>
+  <div class="point">Punto: "Snowflake usa Cortex LLM dentro del propio Task para generar explicaciones inteligentes de cada alerta. En Databricks esto requiere un notebook separado + MLflow + infraestructura adicional."</div>
+</div>
+
+<h2>5. Cierre - Comparativa (1 min)</h2>
+<div class="step">
+  <strong>Mostrar:</strong> Slide 6 del deck (tabla comparativa)<br>
+  <div class="point">Punto: "Todo esto se construyó en minutos usando los datos ya migrados de la POC. La plataforma unificada de Snowflake (Agent + Analyst + Semantic View + Governance + Tasks con AI) no tiene equivalente en Databricks."</div>
+</div>
+
+</body>
+</html>
